@@ -1,0 +1,22 @@
+services:
+  mytb:
+    image: "thingsboard/tb-postgres:latest"
+    container_name: thingsboard
+    restart: always
+    ports:
+      - "${TB_HTTP_PORT:-9090}:9090"
+      - "${TB_MQTT_PORT:-1883}:1883"
+      - "${TB_COAP_PORT:-5683}:5683/udp"
+      - "${TB_EDGE_PORT:-7070}:7070"
+    environment:
+      TB_QUEUE_TYPE: in-memory
+      JAVA_OPTS: "${JAVA_OPTS:--Xms1024m -Xmx2048m}"
+    volumes:
+      - tb-data:/data
+      - tb-logs:/var/log/thingsboard
+
+volumes:
+  tb-data:
+    name: tb-data
+  tb-logs:
+    name: tb-logs
