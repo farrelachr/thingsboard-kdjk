@@ -1,3 +1,8 @@
+if (-not (Test-Path ".env") -and (Test-Path ".env.example")) {
+    Copy-Item ".env.example" ".env"
+    Write-Host "File .env otomatis dibuat dari .env.example" -ForegroundColor DarkGray
+}
+
 Write-Host "Memulai ThingsBoard container..." -ForegroundColor Cyan
 docker compose up -d
 
