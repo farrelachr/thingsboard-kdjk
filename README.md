@@ -3,7 +3,7 @@
 </h1>
 
 <div align="center">
-  <h1>Aplikasi ThingsBoard (IoT Platform)</h1>
+  <h1>ThingsBoard</h1>
   <p>Projek Akhir Praktikum Komunikasi Data dan Jaringan Komputer (KDJK)</p>
   <p>Disusun oleh:</p>
   <table align="center" style="margin-top: 1rem; text-align: left; border-collapse: collapse;">
