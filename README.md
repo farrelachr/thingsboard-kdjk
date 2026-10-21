@@ -75,6 +75,15 @@ docker compose down
 *Menghasilkan link sesuai nama yang Anda minta: `https://nama-pilihan-anda.loca.lt` (jika nama belum dipakai orang lain).*
 *Catatan: Saat pertama kali dibuka di browser pengunjung, Localtunnel akan meminta "Tunnel Password". Skrip di atas sudah otomatis menampilkan password IP publik Anda di terminal.*
 
+### Opsi C: ngrok
+```powershell
+# Set token sekali saja (dapatkan gratis di https://dashboard.ngrok.com/get-started/your-authtoken)
+.\scripts\ngrok.ps1 -Authtoken "TOKEN_NGROK_ANDA"
+
+# Jalankan selanjutnya
+.\scripts\ngrok.ps1
+```
+*Menghasilkan link: `https://xxxx.ngrok-free.app`.*
 
 ---
 

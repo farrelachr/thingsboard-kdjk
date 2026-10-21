@@ -22,4 +22,4 @@ Write-Host " Tekan Ctrl+C untuk menghentikan tunnel kapan saja." -ForegroundColo
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host ""
 
-& $CloudflaredBin tunnel --url http://localhost:9090
+& $CloudflaredBin tunnel --protocol http2 --url http://localhost:9090 @args
