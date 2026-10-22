@@ -51,7 +51,7 @@
 Dalam konteks mata kuliah **Komunikasi Data dan Jaringan Komputer (KDJK)**, ThingsBoard sangat relevan karena mengimplementasikan berbagai fondasi jaringan secara nyata, antara lain:
 - **Protokol Komunikasi Data IoT:** Mendukung protokol **MQTT** (port 1883) berbasis TCP untuk pertukaran pesan *publish/subscribe* yang hemat *bandwidth*, protokol **HTTP/REST API** (port 9090) berbasis model *Request/Response*, serta protokol **CoAP** (port 5683) berbasis UDP untuk perangkat berdaya rendah.
 - **Arsitektur Jaringan Client-Server & Pub/Sub:** Mengatur bagaimana ribuan sensor (*node client*) mentransmisikan data telemetri berkala ke server broker terpusat.
-- **Reverse Tunneling & NAT Traversal:** Mengintegrasikan **Cloudflare Tunnel (`cloudflared`)** untuk mengekspos Web UI dan endpoint API lokal ke internet publik secara terenkripsi (TLS/HTTPS) tanpa memerlukan IP publik statis atau konfigurasi *port forwarding* pada router NAT.
+- **Reverse Tunneling & NAT Traversal:** Mengintegrasikan **ngrok** untuk mengekspos Web UI dan endpoint API lokal ke internet publik secara terenkripsi (TLS/HTTPS) tanpa memerlukan IP publik statis atau konfigurasi *port forwarding* pada router NAT.
 
 ---
 
@@ -67,7 +67,7 @@ Dalam konteks mata kuliah **Komunikasi Data dan Jaringan Komputer (KDJK)**, Thin
   - Sisa ruang penyimpanan (*Disk Space*) minimal 10 GB.
 - **Software Pendukung:**
   - [Docker Engine & Docker Compose](https://www.docker.com/products/docker-desktop/) (v20+).
-  - [Cloudflare Tunnel (`cloudflared`)](https://github.com/cloudflare/cloudflared).
+  - [ngrok](https://ngrok.com/) (v3+).
   - Web Browser modern (Google Chrome, Firefox, Microsoft Edge).
 
 #### Langkah Instalasi CLI :
@@ -118,17 +118,18 @@ Dalam konteks mata kuliah **Komunikasi Data dan Jaringan Komputer (KDJK)**, Thin
    ```
    Jika halaman login ThingsBoard berhasil terbuka, maka proses instalasi lokal telah sukses.
 
-7. **Menghubungkan ke Cloudflare Quick Tunnel (Akses Publik)**  
-   Agar ThingsBoard dapat diakses oleh dosen/asisten lab dari luar jaringan lokal (tanpa satu WiFi), jalankan `cloudflared`:
+7. **Menghubungkan ke ngrok Tunnel (Akses Publik)**  
+   Agar ThingsBoard dapat diakses oleh dosen/asisten lab dari luar jaringan lokal (tanpa satu WiFi), hubungkan authtoken dan jalankan ngrok:
    ```powershell
-   cloudflared tunnel --url http://localhost:9090
+   # Simpan authtoken sekali saja (dapatkan dari https://dashboard.ngrok.com)
+   ngrok config add-authtoken <TOKEN_NGROK_ANDA>
+
+   # Jalankan tunneling ke port 9090
+   ngrok http 9090
    ```
-   Terminal akan menghasilkan URL publik sementara berformat HTTPS, misalnya:
+   Terminal akan menampilkan status online dan URL publik berformat HTTPS:
    ```text
-   +--------------------------------------------------------------------------------------------+
-   | Your quick Tunnel has been created! Visit it at:                                           |
-   | https://example-random-subdomain.trycloudflare.com                                         |
-   +--------------------------------------------------------------------------------------------+
+   Forwarding                    https://example-subdomain.ngrok-free.app -> http://localhost:9090
    ```
 
 ---
@@ -162,7 +163,7 @@ Setelah instalasi pertama, ThingsBoard menyediakan akun kerja utama (**Tenant Ad
 - **Username:** `tenant@thingsboard.org`
 - **Password:** `tenant`
 
-> *Note: Disarankan mengubah kata sandi default melalui menu **Profile Settings** segera setelah login pertama kali.*
+> *Catatan Keamanan: Sangat disarankan mengubah kata sandi default melalui menu **Profile Settings** segera setelah login pertama kali.*
 
 ---
 
@@ -228,10 +229,14 @@ docker compose up -d
 Write-Host "[ThingsBoard] Berhasil dijalankan! Buka browser di http://localhost:9090" -ForegroundColor Green
 ```
 
-### 2. Menjalankan Cloudflare Tunnel Otomatis (`scripts/tunnel.ps1`)
-Skrip ini mendeteksi keberadaan executable `cloudflared.exe` di sistem (baik pada PATH maupun direktori instalasi `C:\Program Files (x86)\cloudflared\cloudflared.exe`) lalu membuka jalur HTTPS publik ke port 9090:
+### 2. Menjalankan ngrok Tunnel Otomatis (`scripts/ngrok.ps1`)
+Skrip ini menjalankan tunneling ngrok secara otomatis ke port 9090, dengan opsi menyimpan authtoken:
 ```powershell
-.\scripts\tunnel.ps1
+# Jalankan pertama kali (sekaligus menyimpan token):
+.\scripts\ngrok.ps1 -Authtoken "TOKEN_NGROK_ANDA"
+
+# Untuk pemakaian selanjutnya:
+.\scripts\ngrok.ps1
 ```
 
 ### 3. Menghentikan Layanan (`scripts/stop.ps1`)
@@ -254,7 +259,7 @@ Write-Host "[ThingsBoard] Layanan telah berhenti." -ForegroundColor Green
 Berikut adalah panduan operasional lengkap dari proses login, pendaftaran sensor, pengiriman telemetri, pembuatan dashboard visual, hingga pengujian alarm.
 
 ### 1. Login ke Halaman Web
-1. Buka URL ThingsBoard (misal: `http://localhost:9090` atau URL Cloudflare Tunnel).
+1. Buka URL ThingsBoard (misal: `http://localhost:9090` atau URL ngrok `https://xxxx.ngrok-free.app`).
 2. Masukkan kredensial akun Tenant Administrator:
    - **Username:** `tenant@thingsboard.org`
    - **Password:** `tenant`
@@ -272,52 +277,88 @@ Setelah login, antarmuka dashboard utama akan menampilkan beberapa menu di bilah
 
 ### 3. Mendaftarkan Perangkat (*Device*) & Mendapatkan Access Token
 1. Buka menu **Device Groups** $\rightarrow$ klik grup **All** $\rightarrow$ klik ikon **`+`** (Add device) $\rightarrow$ pilih **Add new device**.
-2. Masukkan nama perangkat, misalnya: `ESP32-Sensor-Lab`.
+2. Masukkan nama perangkat, misalnya: `ESP32-Vibration-Detector`.
 3. Biarkan jenis transport default (**Default**).
 4. Klik tombol **Add**.
-5. Buka perangkat yang baru dibuat, masuk ke tab **Details** $\rightarrow$ klik **Copy Access Token** (simpan token ini, misalnya: `A1_TEST_TOKEN_XYZ`).
+5. Buka perangkat yang baru dibuat, masuk ke tab **Details** $\rightarrow$ klik **Copy Access Token** (simpan token ini, misalnya: `ergr5lzZUIgBE10w356F`).
 
-### 4. Mengirim Data Telemetri (Simulasi Pengujian)
-Data sensor dapat dikirim melalui protokol **HTTP** maupun **MQTT**:
+---
 
-#### Opsi A: Mengirim via HTTP REST API (Menggunakan cURL)
-Jalankan perintah berikut di terminal untuk menyimulasikan data sensor suhu dan kelembapan:
-```bash
-curl -v -X POST http://localhost:9090/api/v1/A1_TEST_TOKEN_XYZ/telemetry \
-  --header "Content-Type:application/json" \
-  --data "{\"temperature\": 29.5, \"humidity\": 68.2}"
+### 4. Implementasi Hardware ESP32 & Pengiriman Data Telemetri
+Projek ini mengintegrasikan perangkat keras mikrokontroler **ESP32 DevKit** dengan sensor getaran fisik, aktuator suara sirene, dan lampu indikator strobo.
+
+<p align="center">
+  <img src="./images/diagram-hardware.png" alt="Diagram Arsitektur Hardware ESP32 & ThingsBoard" width="540"/>
+</p>
+
+#### Tabel Konfigurasi Pin Hardware:
+| Komponen | Pin ESP32 | Mode Pin | Keterangan Fungsi |
+| :--- | :--- | :--- | :--- |
+| **Sensor Getaran SW-420** | **D19** (GPIO 19) | `INPUT_PULLUP` | Menangkap getaran fisik secara instan menggunakan Hardware Interrupt (`CHANGE`) |
+| **Piezoelectric Buzzer** | **D18** (GPIO 18) | `OUTPUT` | Menghasilkan sirene ambulans dua nada frekuensi (960 Hz & 770 Hz) saat getaran terdeteksi |
+| **LED Indikator 1** | **D22** (GPIO 22) | `OUTPUT` | Lampu strobo indikator alarm aktif (berkedip bergantian dengan LED 2) |
+| **LED Indikator 2** | **D23** (GPIO 23) | `OUTPUT` | Lampu strobo indikator alarm aktif |
+
+#### Struktur Data Telemetri (JSON):
+Setiap kali getaran terdeteksi atau status berkala dikirimkan, ESP32 mengirim payload HTTP POST dalam format JSON:
+```json
+{
+  "vibration": true,
+  "alarm_status": "CRITICAL",
+  "vibration_count": 1,
+  "message": "Getaran Terdeteksi!"
+}
 ```
-*Atau melalui Cloudflare Tunnel publik:*
+
+#### Opsi A: Pengujian Simulasi via HTTP REST API (cURL)
+Jalankan perintah berikut di terminal untuk menyimulasikan data telemetri:
 ```bash
-curl -v -X POST https://example-subdomain.trycloudflare.com/api/v1/A1_TEST_TOKEN_XYZ/telemetry \
+# Pengujian Lokal
+curl -v -X POST http://localhost:9090/api/v1/ergr5lzZUIgBE10w356F/telemetry \
   --header "Content-Type:application/json" \
-  --data "{\"temperature\": 36.8, \"humidity\": 72.0}"
+  --data "{\"vibration\": true, \"alarm_status\": \"CRITICAL\", \"vibration_count\": 1, \"message\": \"Getaran Terdeteksi!\"}"
+```
+*Atau melalui ngrok Tunnel publik (HTTPS):*
+```bash
+curl -v -X POST https://cursive-platter-numerous.ngrok-free.dev/api/v1/ergr5lzZUIgBE10w356F/telemetry \
+  --header "Content-Type:application/json" \
+  --data "{\"vibration\": true, \"alarm_status\": \"CRITICAL\", \"vibration_count\": 1, \"message\": \"Getaran Terdeteksi!\"}"
 ```
 
-#### Opsi B: Mengirim via Mikrokontroler ESP32 Fisik
-Gunakan sketch Arduino pada `examples/esp32_demo/esp32_demo.ino`. Program ini akan membaca sensor suhu, menghubungkan ESP32 ke WiFi kampus, dan melakukan HTTP POST request berkala setiap 5 detik ke server ThingsBoard.
+#### Opsi B: Menggunakan Firmware ESP32 Fisik
+Kode sketch Arduino lengkap tersedia di [`examples/esp32_demo/esp32_demo.ino`](./examples/esp32_demo/esp32_demo.ino):
+1. **Fitur Fail-Safe:** Menggunakan model *non-blocking WiFi connection* sehingga alarm lokal (buzzer ambulans & strobo LED) tetap dapat berbunyi seketika meskipun jaringan internet sedang terputus.
+2. **Hardware Self-Test:** Saat ESP32 pertama kali dinyalakan (atau tombol `EN`/`RST` ditekan), buzzer berbunyi BEEP pendek 0.5 detik dan kedua LED menyala untuk memvalidasi kelistrikan pin.
+3. **Flashing ke ESP32:**
+   - Gunakan board `esp32:esp32:esp32` pada port COM yang terdeteksi (misal `COM3`).
+   - Tahan tombol **`BOOT`** pada board ESP32 saat proses flashing dimulai untuk masuk ke *Download Mode*, lalu tekan **`EN`** sekali setelah upload selesai untuk menjalankan program.
+
+---
 
 ### 5. Membangun Dashboard Visualisasi Interaktif
 1. Buka menu **Dashboards** $\rightarrow$ klik ikon **`+`** $\rightarrow$ **Create new dashboard**.
-2. Beri nama dashboard: `Monitoring Suhu & Kelembapan Lab`.
+2. Beri nama dashboard: `Sistem Deteksi Getaran & Alarm ESP32`.
 3. Klik **Open Dashboard** $\rightarrow$ masuk ke mode edit (ikon pensil).
 4. Buat **Alias Entitas**:
    - Klik ikon *Entity Aliases* $\rightarrow$ **Add Alias**.
-   - Beri nama Alias: `SensorUtama`.
-   - Filter type: *Single Entity* $\rightarrow$ Type: *Device* $\rightarrow$ Device: `ESP32-Sensor-Lab`.
+   - Beri nama Alias: `ESP32-Device`.
+   - Filter type: *Single Entity* $\rightarrow$ Type: *Device* $\rightarrow$ Device: `ESP32-Vibration-Detector`.
    - Klik **Save**.
 5. Tambahkan Widget:
-   - **Widget 1 (Gauge Suhu):** Pilih *Cards / Digital Gauge* $\rightarrow$ Sumber data: `SensorUtama` dengan key `temperature`.
-   - **Widget 2 (Grafik Tren Garis):** Pilih *Charts / Timeseries Line Chart* $\rightarrow$ Sumber data: `SensorUtama` dengan key `temperature` dan `humidity`.
-   - **Widget 3 (Tabel Alarm Aktif):** Pilih *Alarm Widgets / Alarms Table* $\rightarrow$ Sumber data: `SensorUtama`.
+   - **Widget 1 (Status Alarm Saat Ini):** Pilih *Cards / Value Card* $\rightarrow$ Sumber data: `ESP32-Device` dengan key `alarm_status` dan `message`.
+   - **Widget 2 (Penghitung Total Getaran):** Pilih *Cards / Digital Gauge* atau *Timeseries Chart* $\rightarrow$ Sumber data: `ESP32-Device` dengan key `vibration_count`.
+   - **Widget 3 (Riwayat Indikator Getaran Real-time):** Pilih *Charts / Timeseries Line Chart* $\rightarrow$ Sumber data: `ESP32-Device` dengan key `vibration`.
+   - **Widget 4 (Tabel Riwayat Alarm):** Pilih *Alarm Widgets / Alarms Table* $\rightarrow$ Sumber data: `ESP32-Device`.
 6. Klik tanda centang kuning di pojok kanan bawah untuk **Menyimpan Dashboard**.
 
+---
+
 ### 6. Menguji Alarm Otomatis (*Rule Engine*)
-1. Secara default, sistem memiliki Rule Chain bernama `Root Rule Chain`.
-2. Ketika sensor mengirimkan data suhu melebihi ambang batas aman (misal `temperature > 35` °C):
-   - ThingsBoard secara otomatis memicu status **Alarm Severity: CRITICAL**.
-   - Widget tabel alarm di dashboard akan berkedip merah secara *real-time*.
-3. Ketika suhu kembali turun di bawah 30 °C, status alarm dapat diatur otomatis menjadi *Cleared*.
+1. Secara default, sistem ThingsBoard memproses telemetri melalui `Root Rule Chain`.
+2. Ketika sensor mendeteksi getaran (`vibration: true` atau `alarm_status: "CRITICAL"`):
+   - ThingsBoard secara otomatis mencatat *event* dan memicu status **Alarm Severity: CRITICAL**.
+   - Widget tabel alarm di dashboard akan berkedip merah secara *real-time* menandakan adanya anomali fisik.
+3. Saat kondisi stabil kembali (`alarm_status: "NORMAL"`), sistem dapat membersihkan status alarm (*Clear Alarm*).
 
 ---
 
@@ -420,7 +461,7 @@ Untuk memenuhi agenda evaluasi pada projek praktikum KDJK, berikut adalah perban
 1. [Dokumentasi Resmi ThingsBoard Community Edition](https://thingsboard.io/docs/)
 2. [ThingsBoard GitHub Repository](https://github.com/thingsboard/thingsboard)
 3. [Panduan Instalasi Docker ThingsBoard](https://thingsboard.io/docs/user-guide/install/docker/)
-4. [Dokumentasi Cloudflare Tunnel (`cloudflared`)](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)
+4. [Dokumentasi Resmi ngrok](https://ngrok.com/docs/)
 5. [Awesome Self-Hosted - Internet of Things (IoT)](https://github.com/awesome-selfhosted/awesome-selfhosted#internet-of-things-iot)
 6. [Dokumentasi Protokol MQTT OASIS Standard](https://mqtt.org/)
 7. [Dokumentasi PostgreSQL Backup & Restore (`pg_dump`)](https://www.postgresql.org/docs/current/backup-dump.html)
