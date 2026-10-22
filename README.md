@@ -48,11 +48,6 @@
 
 **ThingsBoard** adalah platform IoT (*Internet of Things*) *open-source* berbasis web yang digunakan untuk pengumpulan data telemetri, pemrosesan dan visualisasi data, serta manajemen perangkat (*device management*) secara terpusat. Dikembangkan oleh ThingsBoard, Inc., platform ini dirancang dengan skalabilitas tinggi serta mendukung model *multi-tenancy* sehingga siap digunakan dari skala eksperimen laboratorium hingga kebutuhan *smart city* dan industri (*Industrial IoT*).
 
-Dalam konteks mata kuliah **Komunikasi Data dan Jaringan Komputer (KDJK)**, ThingsBoard sangat relevan karena mengimplementasikan berbagai fondasi jaringan secara nyata, antara lain:
-- **Protokol Komunikasi Data IoT:** Mendukung protokol **MQTT** (port 1883) berbasis TCP untuk pertukaran pesan *publish/subscribe* yang hemat *bandwidth*, protokol **HTTP/REST API** (port 9090) berbasis model *Request/Response*, serta protokol **CoAP** (port 5683) berbasis UDP untuk perangkat berdaya rendah.
-- **Arsitektur Jaringan Client-Server & Pub/Sub:** Mengatur bagaimana ribuan sensor (*node client*) mentransmisikan data telemetri berkala ke server broker terpusat.
-- **Reverse Tunneling & NAT Traversal:** Mengintegrasikan **ngrok** untuk mengekspos Web UI dan endpoint API lokal ke internet publik secara terenkripsi (TLS/HTTPS) tanpa memerlukan IP publik statis atau konfigurasi *port forwarding* pada router NAT.
-
 ---
 
 # Instalasi
