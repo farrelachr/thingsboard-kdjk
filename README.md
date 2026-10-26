@@ -48,6 +48,11 @@
 
 **ThingsBoard** adalah platform IoT (*Internet of Things*) *open-source* berbasis web yang digunakan untuk pengumpulan data telemetri, pemrosesan dan visualisasi data, serta manajemen perangkat (*device management*) secara terpusat. Dikembangkan oleh ThingsBoard, Inc., platform ini dirancang dengan skalabilitas tinggi serta mendukung model *multi-tenancy* sehingga siap digunakan dari skala eksperimen laboratorium hingga kebutuhan *smart city* dan industri (*Industrial IoT*).
 
+Dalam konteks mata kuliah **Komunikasi Data dan Jaringan Komputer (KDJK)**, ThingsBoard sangat relevan karena mengimplementasikan berbagai fondasi jaringan secara nyata, antara lain:
+- **Protokol Komunikasi Data IoT:** Mendukung protokol **MQTT** (port 1883) berbasis TCP untuk pertukaran pesan *publish/subscribe* yang hemat *bandwidth*, protokol **HTTP/REST API** (port 9090) berbasis model *Request/Response*, serta protokol **CoAP** (port 5683) berbasis UDP untuk perangkat berdaya rendah.
+- **Arsitektur Jaringan Client-Server & Pub/Sub:** Mengatur bagaimana ribuan sensor (*node client*) mentransmisikan data telemetri berkala ke server broker terpusat.
+- **Reverse Tunneling & NAT Traversal:** Mengintegrasikan **ngrok** untuk mengekspos Web UI dan endpoint API lokal ke internet publik secara terenkripsi (TLS/HTTPS) tanpa memerlukan IP publik statis atau konfigurasi *port forwarding* pada router NAT.
+
 ---
 
 # Instalasi
@@ -378,7 +383,7 @@ Kode sketch Arduino lengkap tersedia di [`examples/esp32_demo/esp32_demo.ino`](.
 
 ### Perbandingan dengan Aplikasi Web Sejenis
 
-Untuk memenuhi agenda evaluasi pada projek praktikum KDJK, berikut adalah perbandingan ThingsBoard dengan platform sejenis (**ThingSpeak** dan **Home Assistant**):
+Untuk memenuhi agenda evaluasi pada projek praktikum KDJK, berikut adalah perbandingan ThingsBoard dengan platform IoT sejenis (**Blynk (blynk.io)** dan **ThingSpeak**):
 
 <section align="center">
   <table align="center" style="margin-top: 1rem; text-align: left; border-collapse: collapse; font-size: 0.95em;">
@@ -386,67 +391,73 @@ Untuk memenuhi agenda evaluasi pada projek praktikum KDJK, berikut adalah perban
       <tr style="background-color: rgba(0, 0, 0, 0.05);">
         <th style="padding: 8px 14px; border: 1px solid #ddd;">Aspek Evaluasi</th>
         <th style="padding: 8px 14px; border: 1px solid #ddd;">ThingsBoard (CE)</th>
+        <th style="padding: 8px 14px; border: 1px solid #ddd;">Blynk (blynk.io)</th>
         <th style="padding: 8px 14px; border: 1px solid #ddd;">ThingSpeak</th>
-        <th style="padding: 8px 14px; border: 1px solid #ddd;">Home Assistant</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td style="padding: 8px 14px; font-weight: bold; border: 1px solid #ddd;">Pengembang Utama</td>
         <td style="padding: 8px 14px; border: 1px solid #ddd;">ThingsBoard, Inc.</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Blynk Inc.</td>
         <td style="padding: 8px 14px; border: 1px solid #ddd;">The MathWorks, Inc.</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Nabu Casa / Komunitas</td>
       </tr>
       <tr>
         <td style="padding: 8px 14px; font-weight: bold; border: 1px solid #ddd;">Target & Fokus Utama</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Industrial IoT (IIoT), Smart City, Telemetri Industri</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Akademis, Riset Ilmiah, Integrasi MATLAB</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Smart Home, Otomasi Peralatan Rumah Tangga</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Industrial IoT (IIoT), Smart City, Telemetri Industri Skala Besar</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Prototyping Cepat, Mobile IoT Apps (iOS/Android), Smart Devices</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Akademis, Riset Ilmiah, Integrasi Analisis MATLAB</td>
       </tr>
       <tr>
         <td style="padding: 8px 14px; font-weight: bold; border: 1px solid #ddd;">Model Deployment</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Self-hosted (Docker, Kubernetes, Bare-metal) & Cloud</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Cloud-hosted SaaS (versi self-hosted terbatas)</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Self-hosted (Raspberry Pi, Home Assistant OS, Docker)</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Self-hosted Penuh (Docker, Bare-metal) & Cloud</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Cloud SaaS (Blynk Cloud) & Self-hosted terbatas (Legacy)</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Cloud-hosted SaaS (versi self-hosted sangat terbatas)</td>
       </tr>
       <tr>
         <td style="padding: 8px 14px; font-weight: bold; border: 1px solid #ddd;">Dukungan Protokol Jaringan</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">MQTT, HTTP/HTTPS, CoAP, LwM2M, SNMP</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">MQTT, HTTP/HTTPS, CoAP, LwM2M, SNMP (Native)</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Blynk Protocol (TCP/SSL), HTTP REST API, MQTT</td>
         <td style="padding: 8px 14px; border: 1px solid #ddd;">HTTP REST, MQTT</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Zigbee, Z-Wave, Matter, MQTT, HTTP, Bluetooth</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 14px; font-weight: bold; border: 1px solid #ddd;">Antarmuka & Visualisasi</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Web Dashboard interaktif kaya widget kustom (Desktop & Mobile Browser)</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Sangat kuat di Mobile App Native (iOS/Android) + Web Console</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Web Dashboard standar berbasis grafik visual MATLAB</td>
       </tr>
       <tr>
         <td style="padding: 8px 14px; font-weight: bold; border: 1px solid #ddd;">Mesin Otomasi (*Rules*)</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Rule Chain interaktif visual berbasis <i>flow-node</i></td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Skrip analisis komputasi berbasis kode MATLAB</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Automasi logika YAML dan Trigger-Condition-Action UI</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Rule Chain visual berbasis <i>node flow graph</i> yang sangat kompleks</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Event & Automations berbasis kondisi Trigger-Action (Push/Email)</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Analisis komputasi numerik & skrip berbasis MATLAB</td>
       </tr>
       <tr>
         <td style="padding: 8px 14px; font-weight: bold; border: 1px solid #ddd;">Multi-Tenancy</td>
         <td style="padding: 8px 14px; border: 1px solid #ddd;"><b>Mendukung penuh</b> (System Admin, Tenant, Customer)</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Tidak ada (berbasis akun personal/per-channel)</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Tidak ada (arsitektur single-household)</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Tersedia pada plan Business (Organizations / Multi-tier)</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Tidak ada (arsitektur berbasis per-channel)</td>
       </tr>
       <tr>
         <td style="padding: 8px 14px; font-weight: bold; border: 1px solid #ddd;">Kebutuhan RAM Server</td>
         <td style="padding: 8px 14px; border: 1px solid #ddd;">2 GB – 4 GB (relatif berat karena Java/Postgres)</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Sangat ringan (0 MB pada host lokal jika pakai Blynk Cloud)</td>
         <td style="padding: 8px 14px; border: 1px solid #ddd;">Ringan (berjalan di cloud MathWorks)</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">1 GB – 2 GB (berbasis Python)</td>
       </tr>
       <tr>
         <td style="padding: 8px 14px; font-weight: bold; border: 1px solid #ddd;">Biaya & Lisensi</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Open Source (Apache 2.0) gratis 100% untuk Community Edition</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Freemium (dibatasi batas kuota pesan per menit)</td>
-        <td style="padding: 8px 14px; border: 1px solid #ddd;">Open Source (Apache 2.0) gratis</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Open Source (Apache 2.0) 100% gratis tanpa batas perangkat</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Freemium (Free tier dibatasi maks 2 perangkat & widget terbatas)</td>
+        <td style="padding: 8px 14px; border: 1px solid #ddd;">Freemium (Dibatasi kuota update pesan per menit)</td>
       </tr>
     </tbody>
   </table>
 </section>
 
 ### Kesimpulan
-- **ThingsBoard** adalah pilihan paling komprehensif untuk pengujian arsitektur telemetri jaringan skala luas, manajemen armada perangkat (*device fleet*), serta skenario industri yang membutuhkan isolasi data *multi-tenant* dan visualisasi metrik data berkala.
-- **ThingSpeak** lebih cocok jika fokus utama praktikum adalah melakukan analisis kalkulasi matematis berbasis MATLAB terhadap data sensor tanpa memerlukan antarmuka dashboard yang kompleks.
-- **Home Assistant** adalah pilihan terbaik apabila skenario proyek difokuskan pada otomatisasi perabot rumah tangga pintar (*smart home automation*) yang berinteraksi dengan protokol nirkabel lokal seperti Zigbee dan Bluetooth.
+- **ThingsBoard (CE)** adalah platform terbaik untuk kebutuhan sistem telemetri skala industri, riset protokol jaringan komprehensif (MQTT, HTTP, CoAP), dan instalasi mandiri (*self-hosted*) yang bebas dari batasan kuota perangkat atau biaya langganan.
+- **Blynk (blynk.io)** adalah platform yang sangat unggul untuk kemudahan dan kecepatan *prototyping* IoT berbasis perangkat seluler (*mobile apps* iOS/Android), namun memiliki keterbatasan kuota perangkat pada akun gratis (*free tier* maksimal 2 perangkat) serta kontrol infrastruktur server yang lebih tertutup dibanding ThingsBoard.
+- **ThingSpeak** merupakan pilihan praktis jika kebutuhan proyek menitikberatkan pada pengolahan sinyal dan analisis data matematis langsung menggunakan bahasa MATLAB di lingkungan komputasi awan.
 
 ---
 
@@ -455,8 +466,9 @@ Untuk memenuhi agenda evaluasi pada projek praktikum KDJK, berikut adalah perban
 
 1. [Dokumentasi Resmi ThingsBoard Community Edition](https://thingsboard.io/docs/)
 2. [ThingsBoard GitHub Repository](https://github.com/thingsboard/thingsboard)
-3. [Panduan Instalasi Docker ThingsBoard](https://thingsboard.io/docs/user-guide/install/docker/)
-4. [Dokumentasi Resmi ngrok](https://ngrok.com/docs/)
-5. [Awesome Self-Hosted - Internet of Things (IoT)](https://github.com/awesome-selfhosted/awesome-selfhosted#internet-of-things-iot)
-6. [Dokumentasi Protokol MQTT OASIS Standard](https://mqtt.org/)
-7. [Dokumentasi PostgreSQL Backup & Restore (`pg_dump`)](https://www.postgresql.org/docs/current/backup-dump.html)
+3. [Dokumentasi Resmi Blynk IoT (blynk.io)](https://docs.blynk.io/)
+4. [Panduan Instalasi Docker ThingsBoard](https://thingsboard.io/docs/user-guide/install/docker/)
+5. [Dokumentasi Resmi ngrok](https://ngrok.com/docs/)
+6. [Awesome Self-Hosted - Internet of Things (IoT)](https://github.com/awesome-selfhosted/awesome-selfhosted#internet-of-things-iot)
+7. [Dokumentasi Protokol MQTT OASIS Standard](https://mqtt.org/)
+8. [Dokumentasi PostgreSQL Backup & Restore (`pg_dump`)](https://www.postgresql.org/docs/current/backup-dump.html)
