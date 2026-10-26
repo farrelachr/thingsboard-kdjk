@@ -48,11 +48,6 @@
 
 **ThingsBoard** adalah platform IoT (*Internet of Things*) *open-source* berbasis web yang digunakan untuk pengumpulan data telemetri, pemrosesan dan visualisasi data, serta manajemen perangkat (*device management*) secara terpusat. Dikembangkan oleh ThingsBoard, Inc., platform ini dirancang dengan skalabilitas tinggi serta mendukung model *multi-tenancy* sehingga siap digunakan dari skala eksperimen laboratorium hingga kebutuhan *smart city* dan industri (*Industrial IoT*).
 
-Dalam konteks mata kuliah **Komunikasi Data dan Jaringan Komputer (KDJK)**, ThingsBoard sangat relevan karena mengimplementasikan berbagai fondasi jaringan secara nyata, antara lain:
-- **Protokol Komunikasi Data IoT:** Mendukung protokol **MQTT** (port 1883) berbasis TCP untuk pertukaran pesan *publish/subscribe* yang hemat *bandwidth*, protokol **HTTP/REST API** (port 9090) berbasis model *Request/Response*, serta protokol **CoAP** (port 5683) berbasis UDP untuk perangkat berdaya rendah.
-- **Arsitektur Jaringan Client-Server & Pub/Sub:** Mengatur bagaimana ribuan sensor (*node client*) mentransmisikan data telemetri berkala ke server broker terpusat.
-- **Reverse Tunneling & NAT Traversal:** Mengintegrasikan **ngrok** untuk mengekspos Web UI dan endpoint API lokal ke internet publik secara terenkripsi (TLS/HTTPS) tanpa memerlukan IP publik statis atau konfigurasi *port forwarding* pada router NAT.
-
 ---
 
 # Instalasi
@@ -96,11 +91,17 @@ Dalam konteks mata kuliah **Komunikasi Data dan Jaringan Komputer (KDJK)**, Thin
    JAVA_OPTS=-Xms1024M -Xmx2048M
    ```
 
-4. **Jalankan Container Menggunakan Docker Compose**  
-   Unduh image resmi `thingsboard/tb-postgres:latest` dan jalankan container di latar belakang (*detached mode*):
-   ```bash
-   docker compose up -d
+4. **Jalankan Container Menggunakan Skrip Otomasi / Docker Compose**  
+   Jalankan skrip `start.ps1` untuk menyalakan container ThingsBoard di latar belakang (*detached mode*), lalu verifikasi statusnya menggunakan `docker compose ps`:
+   ```powershell
+   .\scripts\start.ps1
+   docker compose ps
    ```
+   *(Atau bisa juga menggunakan perintah langsung: `docker compose up -d`)*.
+
+<p align="center">
+  <img src="./images/00-docker-running.png" alt="Eksekusi Container ThingsBoard dan docker compose ps" width="600"/>
+</p>
 
 5. **Pantau Proses Inisialisasi (*Cold Start*)**  
    Pada saat pertama kali dijalankan, ThingsBoard akan menginisialisasi skema basis data PostgreSQL dan data demo. Proses ini memerlukan waktu 1–2 menit:
@@ -121,16 +122,13 @@ Dalam konteks mata kuliah **Komunikasi Data dan Jaringan Komputer (KDJK)**, Thin
 7. **Menghubungkan ke ngrok Tunnel (Akses Publik)**  
    Agar ThingsBoard dapat diakses oleh dosen/asisten lab dari luar jaringan lokal (tanpa satu WiFi), hubungkan authtoken dan jalankan ngrok:
    ```powershell
-   # Simpan authtoken sekali saja (dapatkan dari https://dashboard.ngrok.com)
-   ngrok config add-authtoken <TOKEN_NGROK_ANDA>
-
    # Jalankan tunneling ke port 9090
    ngrok http 9090
    ```
-   Terminal akan menampilkan status online dan URL publik berformat HTTPS:
-   ```text
-   Forwarding                    https://example-subdomain.ngrok-free.app -> http://localhost:9090
-   ```
+
+<p align="center">
+  <img src="./images/00-ngrok-tunnel.png" alt="Sesi ngrok Tunneling Aktif dan Online" width="600"/>
+</p>
 
 ---
 
@@ -240,15 +238,21 @@ Skrip ini menjalankan tunneling ngrok secara otomatis ke port 9090, dengan opsi 
 ```
 
 ### 3. Menghentikan Layanan (`scripts/stop.ps1`)
-Menghentikan container ThingsBoard dengan aman (*graceful shutdown*) agar basis data tidak rusak (*corrupt*):
+Menghentikan container ThingsBoard dan proses tunneling ngrok secara otomatis:
 ```powershell
 .\scripts\stop.ps1
 ```
 *Isi perintah skrip:*
 ```powershell
-Write-Host "[ThingsBoard] Menghentikan container..." -ForegroundColor Yellow
+Write-Host "Menghentikan ThingsBoard container..." -ForegroundColor Yellow
 docker compose down
-Write-Host "[ThingsBoard] Layanan telah berhenti." -ForegroundColor Green
+
+# Hentikan proses ngrok jika sedang berjalan
+$ngrokProc = Get-Process ngrok -ErrorAction SilentlyContinue
+if ($ngrokProc) {
+    Stop-Process -Name ngrok -Force -ErrorAction SilentlyContinue
+    Write-Host "ngrok berhasil dihentikan." -ForegroundColor Green
+}
 ```
 
 ---
@@ -259,11 +263,15 @@ Write-Host "[ThingsBoard] Layanan telah berhenti." -ForegroundColor Green
 Berikut adalah panduan operasional lengkap dari proses login, pendaftaran sensor, pengiriman telemetri, pembuatan dashboard visual, hingga pengujian alarm.
 
 ### 1. Login ke Halaman Web
-1. Buka URL ThingsBoard (misal: `http://localhost:9090` atau URL ngrok `https://xxxx.ngrok-free.app`).
+1. Buka URL ThingsBoard (misal: `http://localhost:9090` atau URL publik ngrok `https://cursive-platter-numerous.ngrok-free.dev`).
 2. Masukkan kredensial akun Tenant Administrator:
    - **Username:** `tenant@thingsboard.org`
    - **Password:** `tenant`
 3. Klik tombol **Login**.
+
+<p align="center">
+  <img src="./images/01-login.png" alt="Halaman Login ThingsBoard" width="600"/>
+</p>
 
 ### 2. Mengenal Tampilan Antarmuka
 Setelah login, antarmuka dashboard utama akan menampilkan beberapa menu di bilah kiri (*sidebar*):
@@ -274,6 +282,10 @@ Setelah login, antarmuka dashboard utama akan menampilkan beberapa menu di bilah
 | **Rule Chains** | Memprogram alur logika data, pemfilteran pesan, dan pemicu alarm (*Rule Engine*) |
 | **Alarms** | Meninjau riwayat alarm aktif dan konfirmasi penyelesaian masalah (*Acknowledge/Clear*) |
 | **Customers** | Mengelompokkan hak akses dashboard untuk pengguna/klien tertentu |
+
+<p align="center">
+  <img src="./images/02-dashboard-home.png" alt="Tampilan Beranda ThingsBoard" width="600"/>
+</p>
 
 ### 3. Mendaftarkan Perangkat (*Device*) & Mendapatkan Access Token
 1. Buka menu **Device Groups** $\rightarrow$ klik grup **All** $\rightarrow$ klik ikon **`+`** (Add device) $\rightarrow$ pilih **Add new device**.
@@ -310,8 +322,21 @@ Setiap kali getaran terdeteksi atau status berkala dikirimkan, ESP32 mengirim pa
 }
 ```
 
-#### Opsi A: Pengujian Simulasi via HTTP REST API (cURL)
-Jalankan perintah berikut di terminal untuk menyimulasikan data telemetri:
+#### Metode 1: Pengujian Langsung Hardware ESP32 Fisik (Metode Utama)
+Kode program mikrokontroler lengkap tersedia di [`examples/esp32_demo/esp32_demo.ino`](./examples/esp32_demo/esp32_demo.ino):
+1. **Langkah Pengujian:**
+   - Nyalakan ESP32 (sambungkan kabel USB ke laptop atau sumber daya). Saat menyala, ESP32 melakukan *hardware self-test* (buzzer BEEP 0.5 detik dan kedua LED menyala singkat).
+   - Pastikan Hotspot Wi-Fi aktif agar ESP32 terhubung ke internet.
+   - **Goyangkan atau sentil sensor getaran (SW-420 pada Pin D19):**
+     - **Aktuator Lokal:** Buzzer (Pin D18) langsung membunyikan sirene ambulans dua nada (960 Hz & 770 Hz) dan LED strobo (D22 & D23) berkedip bergantian selama 2 detik.
+     - **Telemetri Cloud:** ESP32 secara instan mengirimkan data JSON ke server ThingsBoard melalui tunnel ngrok HTTPS.
+2. **Fitur Fail-Safe:** Menggunakan model koneksi *non-blocking*, sehingga alarm fisik (suara sirene & lampu strobo) tetap berbunyi seketika walaupun koneksi internet sedang terputus.
+
+---
+
+#### Metode 2: Simulasi Telemetri via cURL (Pengujian Tanpa Hardware Fisik)
+Jika perangkat ESP32 sedang *offline* atau tidak berada di tempat, transmisi data telemetri dan pemicu alarm di ThingsBoard tetap dapat disimulasikan melalui terminal menggunakan protokol HTTP REST API:
+
 ```bash
 # Pengujian Lokal
 curl -v -X POST http://localhost:9090/api/v1/ergr5lzZUIgBE10w356F/telemetry \
@@ -325,31 +350,32 @@ curl -v -X POST https://cursive-platter-numerous.ngrok-free.dev/api/v1/ergr5lzZU
   --data "{\"vibration\": true, \"alarm_status\": \"CRITICAL\", \"vibration_count\": 1, \"message\": \"Getaran Terdeteksi!\"}"
 ```
 
-#### Opsi B: Menggunakan Firmware ESP32 Fisik
-Kode sketch Arduino lengkap tersedia di [`examples/esp32_demo/esp32_demo.ino`](./examples/esp32_demo/esp32_demo.ino):
-1. **Fitur Fail-Safe:** Menggunakan model *non-blocking WiFi connection* sehingga alarm lokal (buzzer ambulans & strobo LED) tetap dapat berbunyi seketika meskipun jaringan internet sedang terputus.
-2. **Hardware Self-Test:** Saat ESP32 pertama kali dinyalakan (atau tombol `EN`/`RST` ditekan), buzzer berbunyi BEEP pendek 0.5 detik dan kedua LED menyala untuk memvalidasi kelistrikan pin.
-3. **Flashing ke ESP32:**
-   - Gunakan board `esp32:esp32:esp32` pada port COM yang terdeteksi (misal `COM3`).
-   - Tahan tombol **`BOOT`** pada board ESP32 saat proses flashing dimulai untuk masuk ke *Download Mode*, lalu tekan **`EN`** sekali setelah upload selesai untuk menjalankan program.
-
 ---
 
 ### 5. Membangun Dashboard Visualisasi Interaktif
 1. Buka menu **Dashboards** $\rightarrow$ klik ikon **`+`** $\rightarrow$ **Create new dashboard**.
-2. Beri nama dashboard: `Sistem Deteksi Getaran & Alarm ESP32`.
-3. Klik **Open Dashboard** $\rightarrow$ masuk ke mode edit (ikon pensil).
-4. Buat **Alias Entitas**:
-   - Klik ikon *Entity Aliases* $\rightarrow$ **Add Alias**.
-   - Beri nama Alias: `ESP32-Device`.
-   - Filter type: *Single Entity* $\rightarrow$ Type: *Device* $\rightarrow$ Device: `ESP32-Vibration-Detector`.
-   - Klik **Save**.
-5. Tambahkan Widget:
-   - **Widget 1 (Status Alarm Saat Ini):** Pilih *Cards / Value Card* $\rightarrow$ Sumber data: `ESP32-Device` dengan key `alarm_status` dan `message`.
-   - **Widget 2 (Penghitung Total Getaran):** Pilih *Cards / Digital Gauge* atau *Timeseries Chart* $\rightarrow$ Sumber data: `ESP32-Device` dengan key `vibration_count`.
-   - **Widget 3 (Riwayat Indikator Getaran Real-time):** Pilih *Charts / Timeseries Line Chart* $\rightarrow$ Sumber data: `ESP32-Device` dengan key `vibration`.
-   - **Widget 4 (Tabel Riwayat Alarm):** Pilih *Alarm Widgets / Alarms Table* $\rightarrow$ Sumber data: `ESP32-Device`.
-6. Klik tanda centang kuning di pojok kanan bawah untuk **Menyimpan Dashboard**.
+2. Masukkan nama dashboard, misalnya: `ESP32` (atau `Sistem Deteksi Getaran ESP32`) lalu klik tombol **Add**.
+
+<p align="center">
+  <img src="./images/03-create-dashboard.png" alt="Membuat Dashboard Baru" width="550"/>
+</p>
+
+3. Buka dashboard yang baru dibuat, masuk ke mode edit (ikon pensil), lalu pilih **Add new widget**.
+4. Pilih tipe widget **Cards / Value card** untuk menampilkan indikator realtime:
+   - Pilih Datasource: **Device** $\rightarrow$ Perangkat: `ESP32`.
+   - Pilih Data key telemetri: `alarm` (atau `alarm_status`).
+   - Atur tampilan *Appearance Layout* (misal: *Square*) lalu klik **Add**.
+
+<p align="center">
+  <img src="./images/04-add-widget.png" alt="Menambahkan Widget Value Card" width="550"/>
+</p>
+
+5. Tambahkan widget pendukung lainnya seperti kartu **Status Operasional** (`STANDBY` / `ACTIVE`) atau grafik timeseries getaran.
+6. Simpan dashboard (klik centang kuning di pojok kanan bawah). Dashboard monitoring interaktif siap digunakan secara *real-time*:
+
+<p align="center">
+  <img src="./images/05-dashboard-monitoring.png" alt="Tampilan Akhir Dashboard Monitoring ESP32" width="600"/>
+</p>
 
 ---
 
